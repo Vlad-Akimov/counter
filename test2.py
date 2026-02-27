@@ -410,7 +410,7 @@ def batch_process_sheets(image_folder, output_folder, debug=False):
 # Пример использования
 if __name__ == "__main__":
     # Для одного изображения
-    image_path = "res\photos\q16.jpg"
+    image_path = "res\photos\q17.jpg"
 
     try:
         extracted_img, info = precise_sheet_extraction(image_path, debug=True, padding=10)
