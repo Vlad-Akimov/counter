@@ -163,14 +163,19 @@ class MetalSheetCounterV5:
 # ============================================================
 
 from test7 import MetalSheetExtractor
+from BackgroundRemover1 import SheetBackgroundRemover
 
 
 def process_image(image_path, debug=True):
-    extractor = MetalSheetExtractor(debug=debug)
+    extractor = MetalSheetExtractor(debug=False)
     extracted, _ = extractor.extract_sheet_region(image_path)
 
+    # 🔹 Новый этап удаления фона
+    remover = SheetBackgroundRemover(debug=debug)
+    cleaned = remover.remove_background(extracted)
+
     counter = MetalSheetCounterV5(debug=debug)
-    res = counter.count(extracted)
+    res = counter.count(cleaned)
 
     print("\n======= V5 RESULT =======")
     print("Sheets:", res.sheet_count)
