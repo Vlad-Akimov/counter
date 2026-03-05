@@ -22,9 +22,6 @@ class MetalSheetCounter:
         self.columns = columns
         self.segments = segments
 
-    # -----------------------------------------------------
-    # Load image
-    # -----------------------------------------------------
 
     def load_image(self, image_input):
         if isinstance(image_input, str):
@@ -33,9 +30,6 @@ class MetalSheetCounter:
             return img
         return image_input
 
-    # -----------------------------------------------------
-    # Preprocessing
-    # -----------------------------------------------------
 
     def preprocess(self, img):
         gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
@@ -49,9 +43,6 @@ class MetalSheetCounter:
 
         return gray
 
-    # -----------------------------------------------------
-    # Find vertical bounds
-    # -----------------------------------------------------
 
     def find_vertical_bounds(self, gray):
         sobel_y = np.abs(cv2.Sobel(gray, cv2.CV_32F, 0, 1, ksize=3))
@@ -67,9 +58,6 @@ class MetalSheetCounter:
         ys = np.where(mask)[0]
         return ys[0], ys[-1]
 
-    # -----------------------------------------------------
-    # Extract column signals
-    # -----------------------------------------------------
 
     def column_signals(self, gray):
 
@@ -81,7 +69,6 @@ class MetalSheetCounter:
         signals = []
 
         for x in xs:
-
             col = sobel_y[:, x].astype(np.float32)
 
             if np.mean(col) < 5:
@@ -93,27 +80,21 @@ class MetalSheetCounter:
                 continue
 
             col /= (np.std(col) + 1e-6)
-
             signals.append(col)
 
         return np.array(signals)
 
-    # -----------------------------------------------------
-    # Dominant period using stabilized FFT
-    # -----------------------------------------------------
 
     def dominant_period(self, signal):
 
         N = len(signal)
 
-        # Autocorrelation (устойчивее FFT к гармоникам)
         corr = np.correlate(signal, signal, mode='full')
         corr = corr[N-1:]
 
-        corr[0] = 0  # убираем нулевой лаг
+        corr[0] = 0 
 
-        # Минимальный допустимый период (защита от переучёта)
-        min_period = 8     # ← можно подстроить
+        min_period = 8
         max_period = N // 2
 
         search_region = corr[min_period:max_period]
@@ -133,10 +114,6 @@ class MetalSheetCounter:
         quality = peak_value / (mean_value + 1e-6)
 
         return period, quality
-
-    # -----------------------------------------------------
-    # Count single segment
-    # -----------------------------------------------------
 
     def count_single(self, gray):
 
@@ -166,7 +143,6 @@ class MetalSheetCounter:
         periods = np.array(periods)
         qualities = np.array(qualities)
 
-        # Remove outliers using MAD
         median_period = np.median(periods)
         mad = np.median(np.abs(periods - median_period)) + 1e-6
 
@@ -182,15 +158,11 @@ class MetalSheetCounter:
         weighted_period = np.average(periods, weights=qualities)
 
         count = int(round(gray.shape[0] / weighted_period))
-        count = max(1, min(count, 400))
 
         confidence = np.mean(qualities) / (1 + mad)
 
         return count, confidence, weighted_period, (y1, y2)
 
-    # -----------------------------------------------------
-    # Main count
-    # -----------------------------------------------------
 
     def count(self, image_input):
 
@@ -248,10 +220,6 @@ class MetalSheetCounter:
             median_count=float(median_count)
         )
 
-    # -----------------------------------------------------
-    # Visualization (RESTORED)
-    # -----------------------------------------------------
-
     def visualize(self, img, periods, bounds, final_count):
 
         plt.figure(figsize=(10, 10))
@@ -293,20 +261,7 @@ class MetalSheetCounter:
 
 
 def process_image(image_path, debug, segments):
-    """
-    Обрабатывает изображение и подсчитывает количество листов металла
-    
-    Args:
-        image_path (str): путь к изображению
-        debug (bool): режим отладки (показывает визуализацию)
-        segments (int): количество сегментов для анализа
-    
-    Returns:
-        CountResult: результат подсчета
-    """
-    
     counter = MetalSheetCounter(debug=debug, segments=segments)
-    
     result = counter.count(image_path)
     
     print("\n======= FINAL RESULT =======")
@@ -321,9 +276,9 @@ def process_image(image_path, debug, segments):
 
 
 if __name__ == '__main__':
-    SEGMENT_COUNT = 64
+    SEGMENT_COUNT = 50
     
-    for i in range(32, 59):
+    for i in range(22, 59):
         p = f"res/photos/q{i}.jpg"
         try:
             process_image(p, True, SEGMENT_COUNT)
