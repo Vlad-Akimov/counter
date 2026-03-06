@@ -273,9 +273,9 @@ def process_image(image_path, debug, segments):
 
 
 if __name__ == '__main__':
-    SEGMENT_COUNT = 64
+    SEGMENT_COUNT = 16
     
-    for i in range(28, 59):
+    for i in range(59, 60):
         p = f"res/photos/q{i}.jpg"
         try:
             process_image(p, True, SEGMENT_COUNT)

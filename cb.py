@@ -10,13 +10,17 @@ def convert_image(input_path, output_txt_path, block_size):
 
     height, width = img_array.shape
 
-    new_height = height - (height % block_size)
+    vertical_block = 8
+    
+    new_height = height - (height % vertical_block)
     new_width = width - (width % block_size)
 
     img_array = img_array[:new_height, :new_width]
 
-    grouped = img_array.reshape(new_height // block_size, block_size,
-                                new_width // block_size, block_size).mean(axis=(1, 3))
+    grouped = img_array.reshape(new_height // vertical_block, vertical_block,
+                               new_width // block_size, block_size)
+    
+    grouped = grouped.mean(axis=(1, 3))
 
     grouped = grouped.astype(np.uint8)
 
@@ -25,13 +29,15 @@ def convert_image(input_path, output_txt_path, block_size):
             line = " ".join(f"{val:3d}" for val in row)
             f.write(line + "\n")
 
-    print(f"Matrix: {grouped.shape}")
-    print(f"file: {output_txt_path}")
+    print(f"\nResult matrix: {grouped.shape[0]} rows x {grouped.shape[1]} columns")
+    print(f"  - Each row represents {vertical_block} original rows")
+    print(f"  - Each column represents {block_size} original columns")
+    print(f"File saved: {output_txt_path}")
 
 
 if __name__ == "__main__":
-    block_size = 3
-    n = 60
+    block_size = 4
+    n = 33
     input_image = f"res/photos/q{n}.jpg"
     output_file = f"res/txt/output_q{n}_{block_size}{block_size}.txt"
 
